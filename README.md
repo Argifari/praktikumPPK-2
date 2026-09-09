@@ -1,59 +1,73 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# JARA - Advanced Todo List Application (Backend API)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Repositori ini berisi backend RESTful API untuk aplikasi **JARA**, sebuah platform kolaborasi manajemen tugas (Todo List). Sistem ini dibangun menggunakan **Laravel** dan menggunakan pendekatan token-based authentication (Sanctum).
 
-## About Laravel
+Dokumen ini disusun sebagai panduan *sprint* awal untuk memahami struktur database, otorisasi *Policy*, alur kolaborasi (*Invite/Remove*), dan titik temu (*endpoint*) setiap modul.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ Tech Stack & Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+*   **Framework:** Laravel 10 / 11
+*   **Database:** MySQL 8.0+
+*   **Authentication:** Laravel Sanctum
+*   **PHP Version:** ^8.1
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🗄️ Arsitektur Database (Database Schema)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Aplikasi JARA menggunakan 4 tabel utama dengan skema relasional berikut:
 
-## Laravel Sponsors
+1.  **`users`**
+    *   `id` (Primary Key)
+    *   `name`, `email` (Unique), `password_hash`
+    *   `role` (Enum: `admin`, `user`) - *Default: `user`*
+2.  **`projects`**
+    *   `id` (Primary Key)
+    *   `title`, `description`
+    *   `owner_id` (Foreign Key -> `users.id` ON DELETE CASCADE)
+3.  **`project_user` (Pivot Table Kolaborasi)**
+    *   `id` (Primary Key)
+    *   `project_id` (Foreign Key -> `projects.id` ON DELETE CASCADE)
+    *   `user_id` (Foreign Key -> `users.id` ON DELETE CASCADE)
+    *   `joined_at` (Timestamp)
+4.  **`tasks`**
+    *   `id` (Primary Key)
+    *   `project_id` (Foreign Key -> `projects.id` ON DELETE CASCADE)
+    *   `title`, `description`
+    *   `priority` (Enum: `low`, `medium`, `high`) - *Default: `medium`*
+    *   `status` (Enum: `pending`, `completed`) - *Default: `pending`*
+    *   `due_date` (Date, Nullable)
+    *   `created_by` (Foreign Key -> `users.id` ON DELETE CASCADE)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🚀 Panduan Instalasi Lokal
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1.  **Clone repositori & masuk ke folder direktori:**
+    ```bash
+    git clone [https://github.com/your-org/jara-backend.git](https://github.com/your-org/jara-backend.git)
+    cd jara-backend
+    ```
 
-## Contributing
+2.  **Install Dependensi Composer:**
+    ```bash
+    composer install
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3.  **Setup Environment Variables:**
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    *Ubah kredensial koneksi database MySQL pada file `.env` (misal: `DB_DATABASE=jara_db`, sesuaikan `DB_USERNAME` dan `DB_PASSWORD`).*
 
-## Code of Conduct
+4.  **Jalankan Migration & Database Seeder:**
+    ```bash
+    php artisan migrate --seed
+    ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+5.  **Jalankan Server:**
+    ```bash
+    php artisan serve
