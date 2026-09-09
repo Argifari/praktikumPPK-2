@@ -1,73 +1,35 @@
 # JARA - Advanced Todo List Application (Backend API)
 
-Repositori ini berisi backend RESTful API untuk aplikasi **JARA**, sebuah platform kolaborasi manajemen tugas (Todo List). Sistem ini dibangun menggunakan **Laravel** dan menggunakan pendekatan token-based authentication (Sanctum).
+Repositori ini berisi backend RESTful API untuk aplikasi **JARA**, sebuah platform manajemen tugas (Todo List) tingkat lanjut yang mendukung pengelolaan tugas pribadi maupun kolaborasi tim. 
 
-Dokumen ini disusun sebagai panduan *sprint* awal untuk memahami struktur database, otorisasi *Policy*, alur kolaborasi (*Invite/Remove*), dan titik temu (*endpoint*) setiap modul.
-
----
-
-## 🛠️ Tech Stack & Requirements
-
-*   **Framework:** Laravel 10 / 11
-*   **Database:** MySQL 8.0+
-*   **Authentication:** Laravel Sanctum
-*   **PHP Version:** ^8.1
+Sistem ini dibangun menggunakan **Laravel** dengan pendekatan *token-based authentication* (Sanctum) dan membagi struktur kerja ke dalam 3 modul utama.
 
 ---
 
-## 🗄️ Arsitektur Database (Database Schema)
+## 📑 Software Requirement Specification (SRS)
 
-Aplikasi JARA menggunakan 4 tabel utama dengan skema relasional berikut:
+Daftar spesifikasi kebutuhan fungsional (FR) berikut menjadi acuan utama pengembangan sistem:
 
-1.  **`users`**
-    *   `id` (Primary Key)
-    *   `name`, `email` (Unique), `password_hash`
-    *   `role` (Enum: `admin`, `user`) - *Default: `user`*
-2.  **`projects`**
-    *   `id` (Primary Key)
-    *   `title`, `description`
-    *   `owner_id` (Foreign Key -> `users.id` ON DELETE CASCADE)
-3.  **`project_user` (Pivot Table Kolaborasi)**
-    *   `id` (Primary Key)
-    *   `project_id` (Foreign Key -> `projects.id` ON DELETE CASCADE)
-    *   `user_id` (Foreign Key -> `users.id` ON DELETE CASCADE)
-    *   `joined_at` (Timestamp)
-4.  **`tasks`**
-    *   `id` (Primary Key)
-    *   `project_id` (Foreign Key -> `projects.id` ON DELETE CASCADE)
-    *   `title`, `description`
-    *   `priority` (Enum: `low`, `medium`, `high`) - *Default: `medium`*
-    *   `status` (Enum: `pending`, `completed`) - *Default: `pending`*
-    *   `due_date` (Date, Nullable)
-    *   `created_by` (Foreign Key -> `users.id` ON DELETE CASCADE)
+### Modul 1: User & Authentication Management
+*   **FR-AUTH-01**: Sistem harus menyediakan antarmuka bagi Admin untuk menambahkan akun pengguna baru (Email, Nama, Password default).
+*   **FR-AUTH-02**: Admin dapat menghapus akun pengguna dari sistem.
+*   **FR-AUTH-03**: Pengguna (Admin & User) dapat melakukan autentikasi (Login) untuk mendapatkan akses sistem dan penutupan sesi (Logout).
+
+### Modul 2: Project / List Management
+*   **FR-LIST-01**: Pengguna dapat membuat daftar tugas baru (Personal atau Team Project).
+*   **FR-LIST-02**: Owner (Pemilik) dapat mengubah nama, deskripsi, atau menghapus daftar tugas miliknya.
+*   **FR-LIST-03**: Owner dapat mengundang (*invite*) pengguna lain ke dalam daftar tugasnya berdasarkan email/username sebagai *collaborator*.
+*   **FR-LIST-04**: Owner dapat mengeluarkan anggota (*remove collaborator*) dari daftar tugas.
+*   **FR-LIST-05**: Sistem harus menampilkan indikator progres penyelesaian tugas (persentase `%` tugas selesai dibandingkan dengan total tugas) pada tiap daftar project.
+
+### Modul 3: Task Management & Organization
+*   **FR-TASK-01**: Anggota (*Owner* & *Collaborator*) dalam list dapat membuat tugas baru di dalam daftar tersebut.
+*   **FR-TASK-02**: Pengguna dapat menetapkan atribut tugas meliputi: Judul, Deskripsi, Tenggat Waktu (*Due Date*), dan Tingkat Prioritas (*Low, Medium, High*).
+*   **FR-TASK-03**: Pengguna dapat mengubah seluruh rincian/atribut tugas yang telah dibuat.
+*   **FR-TASK-04**: Anggota dalam list dapat mengubah status tugas secara cepat menjadi Selesai (*Completed*) atau Belum Selesai (*Pending*).
+*   **FR-TASK-05**: Pengguna dapat melakukan filter dan pengurutan (*sorting*) tugas berdasarkan prioritas, tenggat waktu, atau status penyelesaian.
 
 ---
 
-## 🚀 Panduan Instalasi Lokal
 
-1.  **Clone repositori & masuk ke folder direktori:**
-    ```bash
-    git clone [https://github.com/your-org/jara-backend.git](https://github.com/your-org/jara-backend.git)
-    cd jara-backend
-    ```
 
-2.  **Install Dependensi Composer:**
-    ```bash
-    composer install
-    ```
-
-3.  **Setup Environment Variables:**
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
-    *Ubah kredensial koneksi database MySQL pada file `.env` (misal: `DB_DATABASE=jara_db`, sesuaikan `DB_USERNAME` dan `DB_PASSWORD`).*
-
-4.  **Jalankan Migration & Database Seeder:**
-    ```bash
-    php artisan migrate --seed
-    ```
-
-5.  **Jalankan Server:**
-    ```bash
-    php artisan serve
