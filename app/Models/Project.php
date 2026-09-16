@@ -19,13 +19,14 @@ class Project extends Model
 
     public function members()
     {
-        return $this->belongsToMany(User::class, 'project_user')->withTimestamps();
+        return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
     }
 
     public function tasks()
     {
         return $this->hasMany(Task::class);
     }
+}
     protected function progressPercentage(): Attribute
     {
         return Attribute::make(
