@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 
 class AdminUserController extends Controller
 {
-    // Fitur 1 : Melihat daftar semua user
+    // List user
     public function index()
     {
         $users = User::all();
@@ -20,10 +19,10 @@ class AdminUserController extends Controller
         ]);
     }
 
-    // Fitur 2 : Menambahkan user baru
+    // Tambah user
     public function store(Request $request)
     {
-        // Validasi data yang dikirim
+        // Validasi input
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -31,7 +30,7 @@ class AdminUserController extends Controller
             'role' => 'required|in:admin,user'
         ]);
 
-        // Create user ke database
+        // Simpan user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -45,22 +44,22 @@ class AdminUserController extends Controller
         ], 201); // 201 = created
     }
 
-    // Fitur 3 : Menghapus user + cleanup relasi
+    // Hapus user
     public function destroy(User $user, Request $request)
     {
-        // Proteksi hapus diri sendiri
+        // Cegah hapus diri
         if ($request->user()->id === $user->id) {
             return response()->json([
                 'message' => 'Tidak bisa menghapus akun sendiri'
             ], 403);
         }
 
-        // Cleanup keanggotaan (guard: tabel pivot milik Programmer 2, belum ada migrasinya)
+        // Lepas keanggotaan
         if (Schema::hasTable('project_user')) {
             $user->belongsToMany(Project::class, 'project_user')->detach();
         }
 
-        // Hapus token + user (project miliknya ikut terhapus via cascadeOnDelete)
+        // Hapus token user
         $user->tokens()->delete();
         $user->delete();
 
