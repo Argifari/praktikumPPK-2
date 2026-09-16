@@ -1,5 +1,4 @@
 # JARA — Advanced Todo List Web Application
-> **Dokumentasi Spesifikasi Perangkat Lunak (SRS) & Panduan Pengembang**
 
 JARA adalah aplikasi web manajemen tugas (*todo list*) modern yang mendukung pengelolaan pekerjaan personal maupun kolaborasi tim. Aplikasi ini dilengkapi dengan mekanisme autentikasi terproteksi, manajemen peran (*Admin, List Owner, Member*), transaksi basis data atomik untuk integritas data, serta pemantauan progres penyelesaian tugas secara *real-time*.
 
@@ -58,10 +57,9 @@ JARA adalah aplikasi web manajemen tugas (*todo list*) modern yang mendukung pen
 4. **Server-Side Validation**:
    Setiap *request* yang masuk divalidasi pada **Form Request Class** terpisah sebelum masuk ke logika Controller.
 
+---
 
-## 📁 Struktur Folder & Isolasi Berkas (Anti-Conflict)
-
-Untuk meminimalisir bentrok Git (*merge conflict*), setiap programmer bekerja pada folder modul dan file rute terpisah:
+## 📁 Struktur Folder
 
 ```text
 jara-app/
@@ -83,7 +81,7 @@ jara-app/
 │   │   └── Task.php                    <-- [Programmer 3]
 │   ├── Policies/
 │   │   ├── ProjectPolicy.php           <-- [Programmer 2]
-│   │   └── TaskPolicy.php              <-- [Programmer 3]
+│   │   └── TaskPolicy.php            <-- [Programmer 3]
 │   └── Services/
 │       └── ProjectService.php          <-- [Programmer 2] (DB::transaction logic)
 ├── database/
