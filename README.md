@@ -58,27 +58,6 @@ JARA adalah aplikasi web manajemen tugas (*todo list*) modern yang mendukung pen
 4. **Server-Side Validation**:
    Setiap *request* yang masuk divalidasi pada **Form Request Class** terpisah sebelum masuk ke logika Controller.
 
----
-
-## 🧑‍💻 Pembagian Tugas Tim & User Stories
-
-Pembagian tugas dibagi berdasarkan fitur (*Feature-Based / Vertical Slicing*) agar setiap pengembang memegang alur *end-to-end* (Database, Logic Backend, dan Frontend UI).
-
-### 🔷 Programmer 1 — Auth & Admin Management
-* **Programmer 1 - SRS-FR-01**: Sebagai pengguna (Admin/User), saya ingin dapat melakukan login dan logout menggunakan email dan password, agar saya dapat masuk ke dalam sistem dengan aman.
-* **Programmer 1 - SRS-FR-02**: Sebagai Admin, saya ingin dapat menambahkan akun pengguna baru dengan nama, email unik, dan password, agar saya bisa memberikan akses masuk kepada pengguna baru.
-* **Programmer 1 - SRS-FR-03**: Sebagai Admin, saya ingin dapat menghapus akun pengguna dari sistem dan menangani keterikatan datanya secara aman, agar akun tidak aktif dapat dibersihkan tanpa merusak database.
-
-### 🔶 Programmer 2 — Project, Collaboration & Atomic Transaction
-* **Programmer 2 - SRS-FR-04**: Sebagai pengguna terautentikasi, saya ingin dapat membuat daftar tugas (*project/list*) baru dan otomatis menjadi *Owner*, agar saya dapat mengelola ruang kerja tim/pribadi.
-* **Programmer 2 - SRS-FR-05**: Sebagai *List Owner*, saya ingin dapat menghapus daftar tugas milik saya beserta seluruh isi *tasks* dan keanggotaan secara atomik (*transaction & rollback*), agar data terhapus bersih tanpa menyisakan data menggantung.
-* **Programmer 2 - SRS-FR-06**: Sebagai *List Owner*, saya ingin dapat mengundang (*invite*) dan mengeluarkan (*remove*) anggota lain berdasarkan email/username, agar dapat berkolaborasi dalam satu ruang kerja.
-
-### 🟢 Programmer 3 — Task Engine, Filtering & Progress Tracking
-* **Programmer 3 - SRS-FR-07**: Sebagai pengguna, saya ingin melihat persentase progres penyelesaian tugas pada setiap daftar secara *real-time*, agar saya dapat memantau tingkat penyelesaian pekerjaan.
-* **Programmer 3 - Task Engine (Pendukung SRS-FR-07)**: Sebagai anggota daftar (*Owner/Member*), saya ingin dapat membuat, mengedit, memfilter, dan mengubah status tugas (*pending/completed*), agar tugas-tugas terorganisir dan dapat diolah ke dalam indikator progres.
-
----
 
 ## 📁 Struktur Folder & Isolasi Berkas (Anti-Conflict)
 
