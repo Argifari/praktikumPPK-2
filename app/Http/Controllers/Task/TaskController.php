@@ -1,37 +1,42 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Task; // Sesuai aturan isolasi folder Programmer 3
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use App\Http\Requests\Task\StoreTaskRequest;   // Import Request Validasi
+use App\Http\Requests\Task\UpdateTaskRequest;  // Import Request Validasi
 
 class TaskController extends Controller
 {
-    // Menampilkan tasks & kalkulasi progres %
+    // Menampilkan tasks & kalkulasi progres % (SRS-FR-07)
     public function index($projectId, Request $request)
     {
         $project = Project::findOrFail($projectId);
 
+        // TODO NFR Otorisasi: $this->authorize('view', $project);
+
         $query = $project->tasks();
 
-        // Fitur Filter & Sorting opsional berdasarkan query params
+        // Fitur Filter & Sorting (Parameter Query Builder aman dari SQL Injection)
         if ($request->has('sort_by')) {
-            $sortBy = $request->get('sort_by'); // 'due_date' atau 'priority'
+            $sortBy = $request->get('sort_by'); 
             if ($sortBy === 'due_date') {
                 $query->orderBy('due_date', 'asc');
             } elseif ($sortBy === 'priority') {
-                // Urutan prioritas: high -> medium -> low
                 $query->orderByRaw("FIELD(priority, 'high', 'medium', 'low')");
             }
         }
 
         $tasks = $query->get();
 
-        // Query Agregasi SQL untuk menghitung persentase progres
-        $totalTasks = $project->tasks()->count();
-        $completedTasks = $project->tasks()->where('status', 'completed')->count();
+        // Optimasi: Kalkulasi rasio progres langsung dari Collection di memori
+        $totalTasks = $tasks->count();
+        $completedTasks = $tasks->where('status', 'completed')->count();
+        
+        // Menghitung rumus rasional SRS-FR-07
         $progressPercentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
 
         return response()->json([
@@ -44,25 +49,14 @@ class TaskController extends Controller
     }
 
     // POST /api/projects/{id}/tasks
-    public function store(Request $request, $projectId)
+    public function store(StoreTaskRequest $request, $projectId)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high',
-            'due_date' => 'required|date',
-            'status' => 'nullable|in:pending,in_progress,completed',
-            'created_by' => 'required|exists:users,id'
-        ]);
+        // NFR: Request otomatis tervalidasi oleh StoreTaskRequest
 
         $task = Task::create([
             'project_id' => $projectId,
-            'title' => $request->title,
-            'description' => $request->description,
-            'priority' => $request->priority,
-            'due_date' => $request->due_date,
+            ...$request->validated(), // Mengambil data bersih yang sudah lolos validasi
             'status' => $request->status ?? 'pending',
-            'created_by' => $request->created_by,
         ]);
 
         return response()->json([
@@ -72,20 +66,15 @@ class TaskController extends Controller
         ], 201);
     }
 
-    // PUT
-    public function update(Request $request, $id)
+    // PUT /api/tasks/{id}
+    public function update(UpdateTaskRequest $request, $id)
     {
         $task = Task::findOrFail($id);
 
-        $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'priority' => 'sometimes|required|in:low,medium,high',
-            'due_date' => 'sometimes|required|date',
-            'status' => 'sometimes|required|in:pending,in_progress,completed',
-        ]);
+        // TODO NFR Otorisasi: $this->authorize('update', $task);
 
-        $task->update($request->all());
+        // NFR: Request otomatis tervalidasi oleh UpdateTaskRequest
+        $task->update($request->validated());
 
         return response()->json([
             'success' => true,
@@ -94,16 +83,18 @@ class TaskController extends Controller
         ], 200);
     }
 
-    // PATCH Update cepat status)
+    // PATCH /api/tasks/{id}/status (Update cepat status)
     public function updateStatus(Request $request, $id)
     {
         $task = Task::findOrFail($id);
 
-        $request->validate([
+        // TODO NFR Otorisasi: $this->authorize('update', $task);
+
+        $validated = $request->validate([
             'status' => 'required|in:pending,in_progress,completed'
         ]);
 
-        $task->update(['status' => $request->status]);
+        $task->update(['status' => $validated['status']]);
 
         return response()->json([
             'success' => true,
@@ -116,6 +107,9 @@ class TaskController extends Controller
     public function destroy($id)
     {
         $task = Task::findOrFail($id);
+        
+        // TODO NFR Otorisasi: $this->authorize('delete', $task);
+        
         $task->delete();
 
         return response()->json([

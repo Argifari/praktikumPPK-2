@@ -8,6 +8,13 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+namespace App\Http\Controllers;
+
+use App\Http\Requests\InviteMemberRequest;
+use App\Models\Project;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 
 class ProjectMemberController extends Controller
 {
@@ -28,6 +35,10 @@ class ProjectMemberController extends Controller
 
         // 4. Tambahkan pengguna ke tabel pivot project_user dengan role 'member'
         $project->members()->attach($userToInvite->id, ['role' => 'member']);
+        $this->authorize('manageMembers', $project);
+
+        $userToInvite = User::where('email', $request->email)->firstOrFail();
+        $project->members()->attach($userToInvite->id);
 
         return response()->json([
             'message' => 'Anggota berhasil ditambahkan ke project.',
@@ -48,6 +59,8 @@ class ProjectMemberController extends Controller
         }
 
         // 3. Hapus relasi dari tabel pivot project_user
+        $this->authorize('manageMembers', $project);
+
         $project->members()->detach($user->id);
 
         return response()->json([
