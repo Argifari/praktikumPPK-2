@@ -10,24 +10,24 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        // Validasi input dari user
+        // Validasi input
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        // Cek apakah email dan password cocok
+        // Cek kredensial
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Email atau Password salah'
             ], 401);
         }
 
-        // Kalau cocok ambil data user dan buatkan token Sanctum
+        // Buat token
         $user = User::where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Kembalikan response JSON berisi token
+        // Respon token
         return response()->json([
             'message' => 'Login berhasil',
             'access_token' => $token,

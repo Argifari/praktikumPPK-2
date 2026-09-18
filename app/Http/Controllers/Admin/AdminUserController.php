@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AdminUserController extends Controller
 {
-    // Fitur 1 : Melihat daftar semua user
+    // List user
     public function index()
     {
         $users = User::all();
@@ -18,10 +19,10 @@ class AdminUserController extends Controller
         ]);
     }
 
-    // Fitur 2 : Menambahkan user baru
+    // Tambah user
     public function store(Request $request)
     {
-        // Validasi data yang dikirim
+        // Validasi input
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -29,11 +30,11 @@ class AdminUserController extends Controller
             'role' => 'required|in:admin,user'
         ]);
 
-        // Create user ke database
+        // Simpan user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // Enkripsi password
+            'password' => $request->password,
             'role' => $request->role,
         ]);
 
@@ -41,5 +42,29 @@ class AdminUserController extends Controller
             'message' => 'Akun pengguna berhasil dibuat',
             'data' => $user
         ], 201); // 201 = created
+    }
+
+    // Hapus user
+    public function destroy(User $user, Request $request)
+    {
+        // Cegah hapus diri
+        if ($request->user()->id === $user->id) {
+            return response()->json([
+                'message' => 'Tidak bisa menghapus akun sendiri'
+            ], 403);
+        }
+
+        // Lepas keanggotaan
+        if (Schema::hasTable('project_user')) {
+            $user->belongsToMany(Project::class, 'project_user')->detach();
+        }
+
+        // Hapus token user
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Akun pengguna berhasil dihapus'
+        ]);
     }
 }
