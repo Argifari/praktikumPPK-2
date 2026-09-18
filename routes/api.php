@@ -2,32 +2,112 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\ProjectMemberController;
-use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Project\ProjectController;
+use App\Http\Controllers\Project\ProjectMemberController;
+use App\Http\Controllers\Task\TaskController;
 
-// Route Public (Bisa diakses tanpa login)
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::post('/login', [AuthController::class, 'login']);
 
-// Task routes dari teman (pertahankan posisi public seperti di main)
-Route::get('/projects/{project}/tasks', [TaskController::class, 'index']);
-Route::post('/projects/{project}/tasks', [TaskController::class, 'store']);
-Route::put('/tasks/{id}', [TaskController::class, 'update']);
-Route::patch('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
-Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
 
-// Route Protected (Hanya bisa diakses kalo udah login)
+/*
+|--------------------------------------------------------------------------
+| Protected Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Invite & Remove Anggota (dari main)
-    Route::post('/projects/{project}/members', [ProjectMemberController::class, 'store']);
-    Route::delete('/projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy']);
+    /*
+    |--------------------------------------------------------------------------
+    | Project
+    |--------------------------------------------------------------------------
+    */
 
-    // Route khusus admin (dilindungi middleware 'admin')
+    Route::get('/projects', [ProjectController::class, 'index']);
+    Route::post('/projects', [ProjectController::class, 'store']);
+    Route::get('/projects/{project}', [ProjectController::class, 'show']);
+    Route::put('/projects/{project}', [ProjectController::class, 'update']);
+    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Project Members
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/projects/{project}/members',
+        [ProjectMemberController::class, 'store']
+    );
+
+    Route::delete(
+        '/projects/{project}/members/{user}',
+        [ProjectMemberController::class, 'destroy']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tasks
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/projects/{project}/tasks',
+        [TaskController::class, 'index']
+    );
+
+    Route::post(
+        '/projects/{project}/tasks',
+        [TaskController::class, 'store']
+    );
+
+    Route::put(
+        '/tasks/{task}',
+        [TaskController::class, 'update']
+    );
+
+    Route::patch(
+        '/tasks/{task}/status',
+        [TaskController::class, 'updateStatus']
+    );
+
+    Route::delete(
+        '/tasks/{task}',
+        [TaskController::class, 'destroy']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin
+    |--------------------------------------------------------------------------
+    */
+
     Route::middleware('admin')->prefix('admin')->group(function () {
-        Route::get('/users', [AdminUserController::class, 'index']);
-        Route::post('/users', [AdminUserController::class, 'store']);
-        Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
+
+        Route::get('/users', [
+            AdminUserController::class,
+            'index'
+        ]);
+
+        Route::post('/users', [
+            AdminUserController::class,
+            'store'
+        ]);
+
+        Route::delete('/users/{user}', [
+            AdminUserController::class,
+            'destroy'
+        ]);
+
     });
 });

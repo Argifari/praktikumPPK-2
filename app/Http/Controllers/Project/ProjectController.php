@@ -1,6 +1,11 @@
 <?php
 
+namespace App\Http\Controllers\Project;
+
+use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Services\ProjectService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class ProjectController extends Controller
